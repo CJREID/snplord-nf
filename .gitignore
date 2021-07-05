@@ -1,0 +1,3 @@
+# ignore anything in the work directory
+**/work
+.nextflow*
