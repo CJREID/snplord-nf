@@ -23,28 +23,49 @@ nextflow.enable.dsl=2
 // Specify config and module files and processes
 include { SNIPPY } from "./modules/snippy.nf"
 include { SNIPPYCORE } from "./modules/snippy.nf"
+include { IQTREE } from "./modules/iqtree.nf"
 
 // Define input channels
 Channel.fromFilePairs(params.reads)
     .set {reads_ch}
 
+/* Helper function for SNIPPYCORE
+def list_to_string(list) {
+    def stringList = list
+    String result = {stringList.join(' ')}
+    return result
+}
+*/
+
 // snplord workflow
 workflow {
     ref_file = file(params.ref, type: 'file')
     SNIPPY(reads_ch, ref_file)
-    SNIPPYCORE(SNIPPY.out.aln_folders.map{ it -> it[1] }.collect(), ref_file)
+    //original = SNIPPY.out.aln_folders.map{ it -> it[1] }.collect()
+    // original.view()
+    //core_in = list_to_string(original)
+    // core_in.view()
+    SNIPPYCORE(SNIPPY.out.snps.map{ it -> it[1] }.collect(), ref_file)
+    
+   if (params.use_alignment = "core") {
+       iqtree = SNIPPYCORE.out.core_aln
+        }
+
+    else if (params.use_alignment = "full") {
+        iqtree = SNIPPYCORE.out.full_aln
+        }
+
+    else if (params.use_alignment = "both") {
+        iqtree = (SNIPPYCORE.out.core_aln).join(SNIPPYCORE.out.full_aln)
+        }
+
+    else {
+        log.error "Alignment must be one of 'core', 'full', or 'both'"
+        exit(1)
+        }
+
+    IQTREE(iqtree)
 }
 
-/*
-    if params.alignment_tree = "core"
-        Channel.fromPath(core_aln)
-        .set { iqtree_ch }
 
-    else if params.alignment_tree = "full"
-        Channel.fromPath(clean_full_aln)
-        .set { iqtree_ch }
-        
-    else if params.alignment_tree = "both"
-        Channel.fromPath(core_aln, clean_full_aln)
-        .set { iqtree_ch }
-    */
+ 
