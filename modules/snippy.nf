@@ -38,7 +38,7 @@ process SNIPPYCORE {
     output:
     path "core.*"
     path "core.aln", emit: core_aln
-    path "clean.full.aln", emit: clean_full_aln
+    path "clean.full.aln", emit: full_aln
 
     script:
     """

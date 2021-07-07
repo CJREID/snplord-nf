@@ -23,6 +23,7 @@ nextflow.enable.dsl=2
 // Specify config and module files and processes
 include { SNIPPY } from "./modules/snippy.nf"
 include { SNIPPYCORE } from "./modules/snippy.nf"
+include { SNP_DISTS } from "./modules/snp-dists.nf"
 include { IQTREE } from "./modules/iqtree.nf"
 
 // Define input channels
@@ -41,22 +42,17 @@ def list_to_string(list) {
 workflow {
     ref_file = file(params.ref, type: 'file')
     SNIPPY(reads_ch, ref_file)
-    //original = SNIPPY.out.aln_folders.map{ it -> it[1] }.collect()
-    // original.view()
-    //core_in = list_to_string(original)
-    // core_in.view()
     SNIPPYCORE(SNIPPY.out.snps.map{ it -> it[1] }.collect(), ref_file)
-    
-   if (params.use_alignment = "core") {
-       iqtree = SNIPPYCORE.out.core_aln
+
+   if (!params.use_alignment || 'both') {
+        SNIPPYCORE.out.core_aln.concat( SNIPPYCORE.out.full_aln ) | (IQTREE & SNP_DISTS)
+        }
+   else if (params.use_alignment == 'core') {
+       SNIPPYCORE.out.core_aln | (IQTREE & SNP_DISTS)
         }
 
-    else if (params.use_alignment = "full") {
-        iqtree = SNIPPYCORE.out.full_aln
-        }
-
-    else if (params.use_alignment = "both") {
-        iqtree = (SNIPPYCORE.out.core_aln).join(SNIPPYCORE.out.full_aln)
+    else if (params.use_alignment == 'full') {
+        SNIPPYCORE.out.full_aln | (IQTREE & SNP_DISTS)
         }
 
     else {
@@ -64,7 +60,6 @@ workflow {
         exit(1)
         }
 
-    IQTREE(iqtree)
 }
 
 
