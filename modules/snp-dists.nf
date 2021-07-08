@@ -5,14 +5,13 @@ process SNP_DISTS{
     publishDir "${params.outdir}/snp-dists" , mode: 'copy'
 
     input:
-    path (input)
+        path (input)
 
     output:
-    path ("snp-dists.csv")
+        path ("*snp-dists.csv")
 
     script:
     """
-    snp-dists -c -b ${input} > snp-dists.csv
-    
+    snp-dists -c -b ${input} > ${input}.snp-dists.csv
     """
 }

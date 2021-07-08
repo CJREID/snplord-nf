@@ -45,14 +45,17 @@ workflow {
     SNIPPYCORE(SNIPPY.out.snps.map{ it -> it[1] }.collect(), ref_file)
 
    if (!params.use_alignment || 'both') {
-        SNIPPYCORE.out.core_aln.concat( SNIPPYCORE.out.full_aln ) | (IQTREE & SNP_DISTS)
+        SNP_DISTS(SNIPPYCORE.out.core_aln.concat( SNIPPYCORE.out.full_aln ))
+        IQTREE(SNIPPYCORE.out.core_aln.concat( SNIPPYCORE.out.full_aln ), ref_file)
         }
    else if (params.use_alignment == 'core') {
-       SNIPPYCORE.out.core_aln | (IQTREE & SNP_DISTS)
+       SNP_DISTS(SNIPPYCORE.out.core_aln)
+        IQTREE(SNIPPYCORE.out.core_aln, ref_file)
         }
 
     else if (params.use_alignment == 'full') {
-        SNIPPYCORE.out.full_aln | (IQTREE & SNP_DISTS)
+        SNP_DISTS(SNIPPYCORE.out.full_aln)
+        IQTREE(SNIPPYCORE.out.full_aln, ref_file)
         }
 
     else {

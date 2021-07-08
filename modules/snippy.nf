@@ -5,11 +5,11 @@ process SNIPPY {
     publishDir "${params.outdir}/snippy" , mode: 'copy'
 
     input:
-    tuple val(id), path(reads)
-    path (ref)
+        tuple val(id), path(reads)
+        path (ref)
     
     output:
-    tuple val(id), path("${id}"), emit: snps
+        tuple val(id), path("${id}"), emit: snps
 
 script:
     """
@@ -32,13 +32,13 @@ process SNIPPYCORE {
         }
     
     input:
-    path (snps)
-    path (ref)
+        path (snps)
+        path (ref)
 
     output:
-    path "core.*"
-    path "core.aln", emit: core_aln
-    path "clean.full.aln", emit: full_aln
+        path "core.*"
+        path "core.aln", emit: core_aln
+        path "clean.full.aln", emit: full_aln
 
     script:
     """
